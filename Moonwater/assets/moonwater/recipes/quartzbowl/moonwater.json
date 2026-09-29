@@ -1,0 +1,9 @@
+[
+  {
+    "code": "moonwater",
+    "ingredients": [
+      {"type": "item", "code": "game:waterportion", "litres": 1}
+    ],
+    "output": {"type": "item", "code": "moonwaterportion", "litres": 1}
+  }
+]
