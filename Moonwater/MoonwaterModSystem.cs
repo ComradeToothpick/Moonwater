@@ -34,7 +34,7 @@ public class MoonwaterModSystem : ModSystem
 
     public List<QuartzBowlRecipe> GetQuartzBowlRecipes()
     {
-        return this.QuartzBowlRecipes;
+        return QuartzBowlRecipes;
     }
     
     public override double ExecuteOrder()
@@ -57,7 +57,7 @@ public class MoonwaterModSystem : ModSystem
                     this.loadRecipe(sapi, keyValuePair.Key, jrec);
             }
         }
-        sapi.World.Logger.Event("{0} quartz bowl recipes loaded", (object) many.Count);
+        sapi.World.Logger.Event("{0} quartz bowl recipes loaded", many.Count);
         sapi.World.Logger.StoryEvent(Lang.Get("A Moonlit Night..."));
     }
     

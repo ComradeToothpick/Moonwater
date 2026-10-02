@@ -23,6 +23,9 @@ public class BEQuartzBowl : BlockEntityLiquidContainer, ICoolingMedium
     protected static SoundAttributes barrelOpen = new SoundAttributes(AssetLocation.Create("sounds/block/vesselopen"), true);
     protected static SoundAttributes barrelClose = new SoundAttributes(AssetLocation.Create("sounds/block/vesselclose"), true);
     private bool ignoreChange;
+    
+    private int checkedMoonLoS = 0;
+    private bool MoonLoS = false;
     //private MoonwaterModSystem modSystem;
 
     public int CapacityLitres { get; set; } = 50;
@@ -128,7 +131,7 @@ public class BEQuartzBowl : BlockEntityLiquidContainer, ICoolingMedium
 
     protected void FindMatchingRecipe(IPlayer byPlayer)
     {
-        if (Api.World.Calendar.MoonPhase != EnumMoonPhase.Full) return;//Should only work during a full moon
+        if (!CraftingRequirements()) return;//Should only work during a full moon
         ItemSlot[] inputSlots = new ItemSlot[2]
         {
             this.inventory[0],
@@ -141,11 +144,11 @@ public class BEQuartzBowl : BlockEntityLiquidContainer, ICoolingMedium
             int outputStackSize;
             if (byPlayer == null ? quartzBowlRecipe.Matches(inputSlots, out outputStackSize) : quartzBowlRecipe.Matches(byPlayer, inputSlots, out outputStackSize))
             {
-                Api.Logger.Event("a");
+                //Api.Logger.Event("a");
                 this.ignoreChange = true;
                 if (quartzBowlRecipe.SealHours > 0.0)
                 {
-                    Api.Logger.Event("b");
+                    //Api.Logger.Event("b");
                     this.CurrentRecipe = quartzBowlRecipe;
                     this.CurrentOutSize = outputStackSize;
                 }
@@ -155,13 +158,13 @@ public class BEQuartzBowl : BlockEntityLiquidContainer, ICoolingMedium
                     ICoreAPI api = this.Api;
                     if ((api != null ? (api.Side == EnumAppSide.Server ? 1 : 0) : 0) != 0)
                     {
-                        Api.Logger.Event("d");
+                        //Api.Logger.Event("d");
                         quartzBowlRecipe.TryCraftNow(this.Api, 0.0, inputSlots);
                         this.MarkDirty(true);
                         this.Api.World.BlockAccessor.MarkBlockEntityDirty(this.Pos);
                     }
                 }
-                Api.Logger.Event("e");
+                //Api.Logger.Event("e");
                 this.invDialog?.UpdateContents();
                 ICoreAPI api1 = this.Api;
                 if ((api1 != null ? (api1.Side == EnumAppSide.Client ? 1 : 0) : 0) != 0)
@@ -172,16 +175,12 @@ public class BEQuartzBowl : BlockEntityLiquidContainer, ICoolingMedium
                 this.ignoreChange = false;
                 break;
             }
-            else
-            {
-                Api.Logger.Event("False");
-            }
         }
     }
 
     protected void OnEvery3Second(float dt)
     {
-        if (Api.World.Calendar.MoonPhase != EnumMoonPhase.Full)
+        if (!CraftingRequirements(true))
         {
             return;
         }
@@ -189,25 +188,146 @@ public class BEQuartzBowl : BlockEntityLiquidContainer, ICoolingMedium
             this.FindMatchingRecipe();
         if (this.CurrentRecipe != null)
         {
-            Api.Logger.Event("Recipe found!");
+            //Api.Logger.Event("Recipe found!");
             if (!this.CurrentRecipe.TryCraftNow(this.Api, this.Api.World.Calendar.TotalHours - this.SealedSinceTotalHours, new ItemSlot[2]
                 {
                     this.inventory[0],
                     this.inventory[1]
                 }))
                 return;
+            this.Inventory.TryFlipItems(1, this.inventory[0]);
             this.MarkDirty(true);
             this.Api.World.BlockAccessor.MarkBlockEntityDirty(this.Pos);
             this.Sealed = false;
         }
         else
         {
-            Api.Logger.Event("No recipe found for quartz bowl");
+            //Api.Logger.Event("No recipe found for quartz bowl");
             if (!this.Sealed)
                 return;
             this.Sealed = false;
             this.MarkDirty(true);
         }
+    }
+    
+    protected bool CraftingRequirements(bool ignoreMoonLoS = false)
+    {
+        if (!ignoreMoonLoS) checkedMoonLoS--;
+        if (!IsIsolated() || !IsFullMoon() || !IsNightTime() || !MoonIsUp() || !MinimumHeight())
+        {
+            return false;
+        }
+        if (!ignoreMoonLoS)
+        {
+            //Api.Logger.Event("checkedMoonLoS: " + checkedMoonLoS);
+            if (checkedMoonLoS > 0)
+            {
+                if(MoonLoS) return true;
+                else return false;
+            }
+            checkedMoonLoS = 10;//Only check MoonLoS every 30 seconds to minimize lag
+            MoonLoS = MoonLineOfSight();
+            return MoonLoS;
+        }
+        return true;
+    }
+
+    protected bool IsIsolated()
+    {
+        int searchRadius = 128;
+        int count = 0;
+        Api.World.BlockAccessor.SearchBlocks(new BlockPos(Pos.X - searchRadius, Pos.Y - searchRadius, Pos.Z - searchRadius), new BlockPos(Pos.X + searchRadius, Pos.Y + searchRadius, Pos.Z + searchRadius),
+            (blockPos, block) =>
+            {
+                if (block is BlockQuartzBowl)
+                {
+                    count++;
+                    if (count > 1)
+                    {
+                        return false;
+                    }
+                }
+                return true;
+            });
+        if (count <= 1)
+        {
+            //Api.Logger.Event("Bowl is isolated");
+            return true;
+        }
+        return false;
+    }
+
+    protected bool IsNightTime()
+    {
+        //Checking if the sun is below the horizon
+        if (Api.World.Calendar.GetSunPosition(Pos.ToVec3d(), Api.World.Calendar.TotalDays).Y > 0)
+        {
+            return false;
+        }
+        //Api.Logger.Event("Sun is below horizon");
+        return true;
+    }
+
+    protected bool MoonIsUp()
+    {
+        if (Api.World.Calendar.GetMoonPosition(Pos.ToVec3d(), Api.World.Calendar.ElapsedDays).Y >= 0.05)//0.05 is chosen arbitrarily
+        {
+            //Api.Logger.Error("Moon is below horizon, y = " + Api.World.Calendar.GetMoonPosition(Pos.ToVec3d(), Api.World.Calendar.ElapsedDays).Y);
+            return false; //0.05 is chosen arbitrarily
+        }
+        //Api.Logger.Event("Moon is above horizon");
+        return true;
+    }
+
+    protected bool IsFullMoon()
+    {
+        if (Api.World.Calendar.MoonPhase != EnumMoonPhase.Full)
+        {
+            return false;
+        }
+        //Api.Logger.Event("Full Moon");
+        return true;
+    }
+
+    protected bool MinimumHeight()
+    {
+        float minHeightMult = 0.8f;
+        if (this.Pos.Y < Math.Floor(Api.World.BlockAccessor.MapSizeY * minHeightMult)) return false;
+        //Api.Logger.Event("Bowl is High enough");
+        return true;
+    }
+
+    protected bool MoonLineOfSight()
+    {
+        //Api.Logger.Event("Checking Moon Line of Sight");
+        Vec3d moonVec = Api.World.Calendar.GetMoonPosition(Pos.ToVec3d(), Api.World.Calendar.ElapsedDays).ToVec3d().Normalize();
+        moonVec *= -128;//Correcting for the moon being oriented strangely
+        //Api.Logger.Event("Moon vector: " + moonVec);
+        Vec3d origin = Pos.ToVec3d().Add(0.5, 1, 0.5);
+        
+        Ray ray = Ray.FromPositions(origin, origin + moonVec);
+        BlockSelection? blockSel = null;
+        EntitySelection? entitySel = null;
+        //Api.Logger.Event("Beginning ray trace");
+        Api.World.RayTraceForSelection(ray, ref blockSel, ref entitySel, (pos, block) =>
+        {
+            //if (blockSel != null) Api.Logger.Event("Block selection found: " + blockSel.Block.Code);
+            //Api.Logger.Event("Checking if block is obstructing LoS to moon: " + block.BlockId);
+            if (block.AllSidesOpaque || block.LightAbsorption >= 16)
+            {
+                //Api.Logger.Event("Obstruction found!");
+                return true;//return true to say this block is obstructing LoS to the moon
+            }
+            //Api.Logger.Event("No obstruction found!");
+            return false;
+        });
+        if (blockSel == null)
+        {
+            //Api.Logger.Event("Block obstructing LoS to moon!");
+            return true;
+        }
+        //Api.Logger.Event("No Obstruction found!");
+        return false;
     }
 
     public override void OnBlockPlaced(ItemStack byItemStack = null)
