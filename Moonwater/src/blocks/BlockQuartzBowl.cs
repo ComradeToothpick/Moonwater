@@ -13,7 +13,7 @@ using Vintagestory.GameContent;
 
 namespace Moonwater.blocks;
 
-public class BlockQuartzBowl : BlockLiquidContainerBase
+public class BlockQuartzBowl : BlockLiquidContainerTopOpened
 {
     public override bool AllowHeldLiquidTransfer => false;
 

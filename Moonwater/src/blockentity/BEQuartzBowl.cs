@@ -10,7 +10,7 @@ using Vintagestory.API.Server;
 
 namespace Moonwater.blockentity;
 
-public class BEQuartzBowl : BlockEntityLiquidContainer, ICoolingMedium
+public class BEQuartzBowl : BlockEntityLiquidContainer
 {
     private GuiDialogQuartzBowl invDialog;//Need to make custom GUI for this
     private long moonPhaseListenerId;
@@ -28,9 +28,9 @@ public class BEQuartzBowl : BlockEntityLiquidContainer, ICoolingMedium
     private bool MoonLoS = false;
     //private MoonwaterModSystem modSystem;
 
-    public int CapacityLitres { get; set; } = 50;
+    public int CapacityLitres { get; set; } = 1;
 
-    public override string InventoryClassName => "barrel";//TODO:Investigate if this needs to be changed
+    public override string InventoryClassName => "quartzbowl";
 
     /*[Obsolete("Use player aware 'GetCanSeal' instead")]
     public bool CanSeal
@@ -479,7 +479,7 @@ public class BEQuartzBowl : BlockEntityLiquidContainer, ICoolingMedium
         this.invDialog?.Dispose();
     }
 
-    public void CoolNow(ItemSlot slot, Vec3d pos, float dt, bool playSizzle = true)
+    /*public void CoolNow(ItemSlot slot, Vec3d pos, float dt, bool playSizzle = true)
     {
         ItemSlot itemSlot = this.Inventory[1];
         if (itemSlot.Empty)
@@ -494,5 +494,5 @@ public class BEQuartzBowl : BlockEntityLiquidContainer, ICoolingMedium
             return false;
         ICoolingMedium collectibleInterface = itemSlot.Itemstack.Collectible.GetCollectibleInterface<ICoolingMedium>();
         return collectibleInterface != null && collectibleInterface.CanCool(slot, pos);
-    }
+    }*/
 }
