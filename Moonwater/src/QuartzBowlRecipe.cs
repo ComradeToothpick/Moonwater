@@ -21,7 +21,6 @@ public class QuartzBowlRecipe :
 
     /*[DocumentAsJson("Required", "", false)]
     public double SealHours = 0; { get; set; }*/
-    public double SealHours = 0;
 
     [DocumentAsJson("Required", "", false)]
     public string? Code { get; set; }
@@ -79,13 +78,8 @@ public class QuartzBowlRecipe :
         return forPlayer.Entity.Api.Event.TriggerMatchesRecipe(forPlayer, (IRecipeBase) this, inputSlots) && this.Matches(inputSlots, out outputStackSize);
     }
 
-    public bool TryCraftNow(ICoreAPI api, double nowSealedHours, ItemSlot[] inputSlots)
+    public bool TryCraftNow(ICoreAPI api, ItemSlot[] inputSlots)
     {
-        if (this.SealHours > 0.0 && nowSealedHours < this.SealHours)
-        {
-            return false;
-        }
-            
         List<(ItemSlot slot, QuartzBowlRecipeIngredient ingredient)> matched = this.PairInput(inputSlots);
         int outputSize = this.GetOutputSize(matched);
         if (outputSize < 0 || this.Output?.ResolvedItemStack == null)
@@ -184,7 +178,6 @@ public class QuartzBowlRecipe :
         if (!(recipe is QuartzBowlRecipe quartzBowlRecipe))
             throw new ArgumentException("CloneTo should take object of same class or it subclass");
         quartzBowlRecipe.Output = this.Output?.Clone();
-        quartzBowlRecipe.SealHours = this.SealHours;
         quartzBowlRecipe.Code = this.Code;
         if (this.Ingredients == null)
             return;

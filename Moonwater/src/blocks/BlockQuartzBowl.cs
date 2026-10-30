@@ -17,9 +17,9 @@ public class BlockQuartzBowl : BlockLiquidContainerBase
 {
     public override bool AllowHeldLiquidTransfer => false;
 
-    public override int GetContainerSlotId(BlockPos pos) => 1;
+    public override int GetContainerSlotId(BlockPos pos) => 0;
 
-    public override int GetContainerSlotId(ItemStack containerStack) => 1;
+    public override int GetContainerSlotId(ItemStack containerStack) => 0;
 
     public override void OnBlockBroken(
         IWorldAccessor world,
@@ -70,7 +70,49 @@ public class BlockQuartzBowl : BlockLiquidContainerBase
 
     public override int TryPutLiquid(BlockPos pos, ItemStack liquidStack, float desiredLitres)
     {
-        return base.TryPutLiquid(pos, liquidStack, desiredLitres);
+        if (liquidStack == null)
+            return 0;
+        WaterTightContainableProps containableProps = BlockLiquidContainerBase.GetContainableProps(liquidStack);
+        float num1 = containableProps != null ? containableProps.ItemsPerLitre : 1f;
+        int num2 = (int) ((double) num1 * (double) desiredLitres);
+        float stackSize = (float) liquidStack.StackSize;
+        float num3 = this.CapacityLitres * num1;
+        ItemStack content1 = this.GetContent(pos);
+        if (content1 != null)
+        {
+            if (!content1.Equals(this.api.World, liquidStack, GlobalConstants.IgnoredStackAttributes))
+                return 0;
+            int num4 = Math.Min((int) Math.Min(stackSize, num3 - (float) content1.StackSize), num2);
+            if (content1.StackSize + num4 == 0)
+                return 0;
+            TransitionState[] transitionStates1 = liquidStack.Collectible.UpdateAndGetTransitionStates(this.api.World, (ItemSlot) new DummySlot(liquidStack));
+            TransitionState[] transitionStates2 = content1.Collectible.UpdateAndGetTransitionStates(this.api.World, (ItemSlot) new DummySlot(content1));
+            if (!content1.Equals(this.api.World, liquidStack, GlobalConstants.IgnoredStackAttributes))
+                return 0;
+            if (transitionStates1 != null && transitionStates2 != null)
+            {
+                float num5 = (float) num4 / (float) (num4 + content1.StackSize);
+                for (int index = 0; index < transitionStates1.Length; ++index)
+                {
+                    float transitionedHours = (float) ((double) transitionStates1[index].TransitionedHours * (double) num5 + (double) transitionStates2[index].TransitionedHours * (1.0 - (double) num5));
+                    content1.Collectible.SetTransitionState(content1, transitionStates1[index].Props.Type, transitionedHours);
+                }
+            }
+            content1.StackSize += num4;
+            BlockEntity blockEntity = this.api.World.BlockAccessor.GetBlockEntity(pos);
+            blockEntity.MarkDirty(true);
+            if (blockEntity is BlockEntityContainer blockEntityContainer)
+                blockEntityContainer.Inventory[this.GetContainerSlotId(pos)].MarkDirty();
+            return num4;
+        }
+        if (containableProps == null || !containableProps.Containable)
+            return 0;
+        int val2 = (int) GameMath.Min((float) num2, num3, stackSize);
+        int num6 = Math.Min(num2, val2);
+        ItemStack content2 = liquidStack.Clone();
+        content2.StackSize = num6;
+        this.SetContent(pos, content2);
+        return num6;
     }
 
     public override int TryPutLiquid(
@@ -172,25 +214,6 @@ public class BlockQuartzBowl : BlockLiquidContainerBase
             ItemSlot contentSlot = blockEntity.Inventory[0];
             if (!contentSlot.Empty)
                 a = (a.Length <= 0 ? $"{a}{Lang.Get("Contents:")}\n " : a + " ") + Lang.Get("{0}x {1}", (object) contentSlot.Itemstack.StackSize, (object) contentSlot.Itemstack.GetName()) + BlockLiquidContainerBase.PerishableInfoCompact(this.api, contentSlot, 0.0f, false);
-            if (blockEntity.Sealed && blockEntity.CurrentRecipe != null)
-            {
-                double d = world.Calendar.TotalHours - blockEntity.SealedSinceTotalHours;
-                if (d < 3.0)
-                    d = Math.Max(0.0, d + 0.2);
-                string str2;
-                if (d <= 24.0)
-                    str2 = Lang.Get("{0} hours", (object) Math.Floor(d));
-                else
-                    str2 = Lang.Get("{0} days", (object) (Math.Floor(d / (double) this.api.World.Calendar.HoursPerDay * 10.0) / 10.0));
-                string str3 = str2;
-                string str4;
-                if (blockEntity.CurrentRecipe.SealHours <= 24.0)
-                    str4 = Lang.Get("{0} hours", (object) Math.Round(blockEntity.CurrentRecipe.SealHours));
-                else
-                    str4 = Lang.Get("{0} days", (object) Math.Round(blockEntity.CurrentRecipe.SealHours / (double) this.api.World.Calendar.HoursPerDay, 1));
-                string str5 = str4;
-                a = $"{a}\n{Lang.Get("Sealed for {0} / {1}", (object) str3, (object) str5)}";
-            }
         }
         return a + str1;
     }

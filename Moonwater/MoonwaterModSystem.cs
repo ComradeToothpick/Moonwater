@@ -7,6 +7,7 @@ using Vintagestory.API.Config;
 using Vintagestory.API.Common;
 using Newtonsoft.Json.Linq;
 using System;
+using Moonwater.blockentity;
 
 namespace Moonwater;
 
@@ -24,6 +25,7 @@ public class MoonwaterModSystem : ModSystem
         api.RegisterBlockClass("BlockQuartzBowl", typeof(BlockQuartzBowl));
         api.RegisterBlockEntityClass("BEQuartzBowl", typeof(BEQuartzBowl));
         this.QuartzBowlRecipes = api.RegisterRecipeRegistry<RecipeRegistryGeneric<QuartzBowlRecipe>>("quartzbowlrecipes").Recipes;
+        api.RegisterBlockClass("BEMoonwell", typeof(BEMoonwell));
     }
     
     public override void StartPre(ICoreAPI api)

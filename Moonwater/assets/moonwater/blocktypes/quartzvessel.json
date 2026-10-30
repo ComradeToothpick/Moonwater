@@ -1,0 +1,73 @@
+{
+  code: "quartzvessel",
+  class: "BlockQuartzVessel",
+  
+  behaviors: [
+    {name: "Lockable"},
+    {name: "UnstableFalling"},
+    { name: "RightClickPickup"}
+  ],
+  entityClass: "BEQuartzVessel",
+  attributes: {
+    reinforcable: true,
+    liquidContainerProps: {
+      capacityLitres: 10,
+      transferSizeLitres: 1,
+      emptyShapeLoc: "game:shapes/block/wood/bucket/empty",
+      opaqueContentShapeLoc: "game:shapes/block/wood/bucket/contents",
+      liquidContentShapeLoc: "game:shapes/block/wood/bucket/liquidcontents",
+      liquidMaxYTranslate: 0.4375
+    }
+  },
+  heldRightReadyAnimation: "helditemreadybucket",
+  creativeinventoryStacks: [
+    {
+      tabs: ["general", "decorative", "moonwater"],
+      stacks: [
+        { type: "block", code: "quartzvessel" },
+      ]
+    }
+  ],
+  shape: { base: "game:block/wood/bucket/empty" },
+  sidesolid: {
+    all: false
+  },
+  sideopaque: {
+    all: false
+  },
+  blockmaterial: "Stone",
+  textures: {
+    wood: { base: "game:block/stone/quartz/full/plain1" }
+  },
+  replaceable: 500,
+  resistance: 1.5,
+  maxStackSize: 1,
+  liquidSelectable: 1,
+  lightAbsorption: 0,
+  sounds: {
+    "place": "game:block/glass",
+    "hit": "game:block/glass",
+    "break": "game:block/glass",
+    "walk": "game:walk/glass"
+  },
+  collisionbox: {
+    x1: 0.21875, y1: 0, z1: 0.21875, x2: 0.78125, y2: 0.75, z2: 0.78125
+  },
+  selectionbox: {
+    x1: 0.21875, y1: 0, z1: 0.21875, x2: 0.78125, y2: 0.75, z2: 0.78125
+  },
+  materialDensity: 400,
+  tpHandTransform: {
+    translation: { x: -0.85, y: -1, z: -0.8 },
+    rotation: { x: 0, y: 0, z: 0 },
+    scale: 0.62
+  },
+  guiTransform: {
+    origin: { x: 0.5, y: 0.3, z: 0.5 },
+    scale: 1.75
+  },
+  groundTransform: {
+    origin: { x: 0.5, y: 0, z: 0.5 },
+    scale: 2
+  }
+}

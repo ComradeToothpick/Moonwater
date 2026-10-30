@@ -1,0 +1,57 @@
+{
+  code: "moonwell",
+  class: "BlockMoonwell",
+  entityClass: "BEMoonwell",
+  attributes: {
+    mapColorCode: "settlement",
+    handbook: {
+      groupBy: ["moonwell"]
+    },
+  },
+  attributes: {
+    multiblockStructure: {
+      blockNumbers: {
+        "quartzslab": 1,
+        "quartz": 2,
+        "quartzstairs-up-north*": 3,
+        "quartzstairs-up-south*": 4,
+        "quartzstairs-up-east*": 5,
+        "quartzstairs-up-west*": 6
+      },
+      offsets: [
+        { x: -1, y: 0, z: -1, w: 2 },
+        { x: 0, y: 0, z: -1, w: 3 },
+        { x: 1, y: 0, z: -1, w: 2 },
+        { x: 1, y: 0, z: 0, w: 6 },
+        { x: 0, y: 0, z: 1, w: 4 },
+        { x: -1, y: 0, z: 0, w: 5 },
+        { x: -1, y: 0, z: 1, w: 2 },
+        { x: 0, y: 0, z: 0, w: 1 },
+        { x: 1, y: 0, z: 1, w: 2 }
+      ]
+    }
+  },
+  behaviors: [{name: "HorizontalOrientable"}],
+  variantgroups: [
+    { code:"rock", states: ["quartz"] },
+    { code:"side", loadFromProperties: "abstract/horizontalorientation" }
+  ],
+  creativeinventory: { "general": ["*"], "terrain": ["*"] },
+  heldTpIdleAnimation: "holdbothhandslarge", heldRightReadyAnimation: "heldblockready", heldTpUseAnimation: "twohandplaceblock",
+  blockmaterial: "Stone",
+  textures: {
+    "rock": { base: "block/stone/rock/{rock}4" }
+  },
+  sidesolid: {
+    all: false, down: true
+  },
+  sideopaque: {
+    all: false, down: true
+  },
+  lightAbsorption: 1,
+  replaceable: 600,
+  resistance: 3,
+  collisionSelectionBoxes: [
+    { x1: -1, y1: 0, z1: -1, x2: 2, y2: 1, z2: 2 },
+  ]
+}

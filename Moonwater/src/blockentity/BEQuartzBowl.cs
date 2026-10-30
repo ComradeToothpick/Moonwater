@@ -28,9 +28,9 @@ public class BEQuartzBowl : BlockEntityLiquidContainer, ICoolingMedium
     private bool MoonLoS = false;
     //private MoonwaterModSystem modSystem;
 
-    public int CapacityLitres { get; set; } = 50;
+    public int CapacityLitres { get; set; } = 1;
 
-    public override string InventoryClassName => "barrel";//TODO:Investigate if this needs to be changed
+    public override string InventoryClassName => "quartzbowl";
 
     /*[Obsolete("Use player aware 'GetCanSeal' instead")]
     public bool CanSeal
@@ -50,17 +50,11 @@ public class BEQuartzBowl : BlockEntityLiquidContainer, ICoolingMedium
 
     public BEQuartzBowl()
     {
-        this.inventory = new InventoryGeneric(2, (string) null, (ICoreAPI) null, (NewSlotDelegate) ((id, self) => id == 0 ? (ItemSlot) new ItemSlotBarrelInput((InventoryBase) self) : (ItemSlot) new ItemSlotLiquidOnly((InventoryBase) self, 50f)));
+        this.inventory = new InventoryGeneric(1, (string) null, (ICoreAPI) null, (NewSlotDelegate) ((id, self) => (ItemSlot) new ItemSlotLiquidOnly((InventoryBase) self, (float)this.CapacityLitres)));
         this.inventory.BaseWeight = 1f;
         this.inventory.OnGetSuitability = new GetSuitabilityDelegate(this.GetSuitability);
         this.inventory.SlotModified += new Action<int>(this.Inventory_SlotModified);
         this.inventory.OnAcquireTransitionSpeed += new CustomGetTransitionSpeedMulDelegate(this.Inventory_OnAcquireTransitionSpeed1);
-    }
-
-    public void ConvertContents(float obj)
-    {
-        if (!(this.Api.World.Calendar.MoonPhase == EnumMoonPhase.Full)) return; //Do nothing if it is not a full moon
-        
     }
 
     protected float Inventory_OnAcquireTransitionSpeed1(
@@ -69,23 +63,14 @@ public class BEQuartzBowl : BlockEntityLiquidContainer, ICoolingMedium
         float mul)
     {
         int num;
-        if (this.Sealed)
-        {
-            QuartzBowlRecipe currentRecipe = this.CurrentRecipe;
-            if ((currentRecipe != null ? (currentRecipe.SealHours > 0.0 ? 1 : 0) : 0) != 0)
-            {
-                num = 0;
-                goto label_4;
-            }
-        }
+        
         num = 1;
-        label_4:
         return (float) num;
     }
 
     protected float GetSuitability(ItemSlot sourceSlot, ItemSlot targetSlot, bool isMerge)
     {
-        if (targetSlot == this.inventory[1] && this.inventory[0].StackSize > 0)
+        if (targetSlot == this.inventory[0])
         {
             ItemStack itemstack1 = this.inventory[0].Itemstack;
             ItemStack itemstack2 = sourceSlot.Itemstack;
@@ -107,7 +92,7 @@ public class BEQuartzBowl : BlockEntityLiquidContainer, ICoolingMedium
         JsonObject attribute = this.ownBlock?.Attributes?["capacityLitres"];
         if (attribute != null && attribute.Exists)
         {
-            this.CapacityLitres = attribute.AsInt(50);
+            this.CapacityLitres = attribute.AsInt(1);
             (this.inventory[1] as ItemSlotLiquidOnly).CapacityLitres = (float) this.CapacityLitres;
         }
         if (api.Side == EnumAppSide.Server)
@@ -132,10 +117,9 @@ public class BEQuartzBowl : BlockEntityLiquidContainer, ICoolingMedium
     protected void FindMatchingRecipe(IPlayer byPlayer)
     {
         if (!CraftingRequirements()) return;//Should only work during a full moon
-        ItemSlot[] inputSlots = new ItemSlot[2]
+        ItemSlot[] inputSlots = new ItemSlot[1]
         {
-            this.inventory[0],
-            this.inventory[1]
+            this.inventory[0]
         };
         this.CurrentRecipe = (QuartzBowlRecipe) null;
         //if (this.modSystem is null) this.modSystem = (MoonwaterModSystem) this.Api.ModLoader.GetModSystem<MoonwaterModSystem>();
@@ -146,24 +130,17 @@ public class BEQuartzBowl : BlockEntityLiquidContainer, ICoolingMedium
             {
                 //Api.Logger.Event("a");
                 this.ignoreChange = true;
-                if (quartzBowlRecipe.SealHours > 0.0)
+                
+                Api.Logger.Event("c");
+                ICoreAPI api = this.Api;
+                if ((api != null ? (api.Side == EnumAppSide.Server ? 1 : 0) : 0) != 0)
                 {
-                    //Api.Logger.Event("b");
-                    this.CurrentRecipe = quartzBowlRecipe;
-                    this.CurrentOutSize = outputStackSize;
+                    //Api.Logger.Event("d");
+                    quartzBowlRecipe.TryCraftNow(this.Api, inputSlots);
+                    this.MarkDirty(true);
+                    this.Api.World.BlockAccessor.MarkBlockEntityDirty(this.Pos);
                 }
-                else
-                {
-                    Api.Logger.Event("c");
-                    ICoreAPI api = this.Api;
-                    if ((api != null ? (api.Side == EnumAppSide.Server ? 1 : 0) : 0) != 0)
-                    {
-                        //Api.Logger.Event("d");
-                        quartzBowlRecipe.TryCraftNow(this.Api, 0.0, inputSlots);
-                        this.MarkDirty(true);
-                        this.Api.World.BlockAccessor.MarkBlockEntityDirty(this.Pos);
-                    }
-                }
+                
                 //Api.Logger.Event("e");
                 this.invDialog?.UpdateContents();
                 ICoreAPI api1 = this.Api;
@@ -189,13 +166,12 @@ public class BEQuartzBowl : BlockEntityLiquidContainer, ICoolingMedium
         if (this.CurrentRecipe != null)
         {
             //Api.Logger.Event("Recipe found!");
-            if (!this.CurrentRecipe.TryCraftNow(this.Api, this.Api.World.Calendar.TotalHours - this.SealedSinceTotalHours, new ItemSlot[2]
+            if (!this.CurrentRecipe.TryCraftNow(this.Api, new ItemSlot[1]
                 {
-                    this.inventory[0],
-                    this.inventory[1]
+                    this.inventory[0]
                 }))
                 return;
-            this.Inventory.TryFlipItems(1, this.inventory[0]);
+            /*this.Inventory.TryFlipItems(1, this.inventory[0]);*/
             this.MarkDirty(true);
             this.Api.World.BlockAccessor.MarkBlockEntityDirty(this.Pos);
             this.Sealed = false;
@@ -334,10 +310,8 @@ public class BEQuartzBowl : BlockEntityLiquidContainer, ICoolingMedium
     {
         base.OnBlockPlaced(byItemStack);
         ItemSlot itemSlot1 = this.Inventory[0];
-        ItemSlot itemSlot2 = this.Inventory[1];
-        if (itemSlot1.Empty || !itemSlot2.Empty || BlockLiquidContainerBase.GetContainableProps(itemSlot1.Itemstack) == null)
+        if (itemSlot1.Empty || BlockLiquidContainerBase.GetContainableProps(itemSlot1.Itemstack) == null)
             return;
-        this.Inventory.TryFlipItems(1, itemSlot1);
     }
 
     public override void OnBlockBroken(IPlayer byPlayer = null)
@@ -372,7 +346,7 @@ public class BEQuartzBowl : BlockEntityLiquidContainer, ICoolingMedium
         if (this.invDialog == null)
         {
             ICoreClientAPI capi = this.Api as ICoreClientAPI;
-            this.invDialog = new GuiDialogQuartzBowl(Lang.Get("Barrel"), this.Inventory, this.Pos, this.Api as ICoreClientAPI);
+            this.invDialog = new GuiDialogQuartzBowl(Lang.Get("Quartz Bowl"), this.Inventory, this.Pos, this.Api as ICoreClientAPI);
             this.invDialog.OnClosed += (Action) (() =>
             {
                 this.invDialog = (GuiDialogQuartzBowl) null;
@@ -425,7 +399,7 @@ public class BEQuartzBowl : BlockEntityLiquidContainer, ICoolingMedium
             if (!new BlockEntity.CachedAccessPerms(this.Api.World, this.Pos, player).IsInteractingPlayerAllowedTo(EnumBlockAccessFlags.Use, true, "quartzbowl"))
                 ((ICoreServerAPI) this.Api).Network.SendBlockEntityPacket((IServerPlayer) player, this.Pos, 1338);
             //else
-                //this.SealBarrel();
+            //this.SealBarrel();
         }
     }
 
@@ -479,9 +453,9 @@ public class BEQuartzBowl : BlockEntityLiquidContainer, ICoolingMedium
         this.invDialog?.Dispose();
     }
 
-    public void CoolNow(ItemSlot slot, Vec3d pos, float dt, bool playSizzle = true)
+    public void CoolNow(ItemSlot slot, Vec3d pos, float dt, bool playSizzle = true)//Moonwater should have interesting quenching properties
     {
-        ItemSlot itemSlot = this.Inventory[1];
+        ItemSlot itemSlot = this.Inventory[0];
         if (itemSlot.Empty)
             return;
         itemSlot.Itemstack.Collectible.GetCollectibleInterface<ICoolingMedium>()?.CoolNow(slot, pos, dt, playSizzle);
@@ -489,7 +463,7 @@ public class BEQuartzBowl : BlockEntityLiquidContainer, ICoolingMedium
 
     public bool CanCool(ItemSlot slot, Vec3d pos)
     {
-        ItemSlot itemSlot = this.Inventory[1];
+        ItemSlot itemSlot = this.Inventory[0];
         if (itemSlot.Empty)
             return false;
         ICoolingMedium collectibleInterface = itemSlot.Itemstack.Collectible.GetCollectibleInterface<ICoolingMedium>();

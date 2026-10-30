@@ -45,36 +45,41 @@ public class GuiDialogQuartzBowl : GuiDialogBlockEntity
     bounds3.BothSizing = ElementSizing.FitToChildren;
     bounds3.WithChildren(elementBounds, bounds1);
     ElementBounds bounds4 = ElementStdBounds.AutosizedMainDialog.WithFixedAlignmentOffset(this.IsRight(this.screenPos) ? -GuiStyle.DialogToScreenPadding : GuiStyle.DialogToScreenPadding, 0.0).WithAlignment(this.IsRight(this.screenPos) ? EnumDialogArea.RightMiddle : EnumDialogArea.LeftMiddle);
-    this.SingleComposer = this.capi.Gui.CreateCompo("blockentitybarrel" + this.BlockEntityPosition?.ToString(), bounds4).AddShadedDialogBG(bounds3).AddDialogTitleBar(this.DialogTitle, new Action(this.OnTitleBarClose)).BeginChildElements(bounds3).AddItemSlotGrid((IInventory) this.Inventory, new Action<object>(this.SendInvPacket), 1, new int[1], this.inputSlotBounds, "inputSlot").AddSmallButton(Lang.Get("barrel-seal"), new ActionConsumable(this.onSealClick), ElementBounds.Fixed(0.0, 100.0, 80.0, 25.0)).AddInset(bounds2.ForkBoundingParent(2.0, 2.0, 2.0, 2.0), 2).AddDynamicCustomDraw(bounds2, new DrawDelegateWithBounds(this.fullnessMeterDraw), "liquidBar").AddDynamicText(this.getContentsText(), CairoFont.WhiteDetailText(), bounds1, "contentText").EndChildElements().Compose();
+    this.SingleComposer = this.capi.Gui
+      .CreateCompo("blockentityquartzbowl" + this.BlockEntityPosition?.ToString(), bounds4)
+      .AddShadedDialogBG(bounds3).AddDialogTitleBar(this.DialogTitle, new Action(this.OnTitleBarClose))
+      .BeginChildElements(bounds3)
+      .AddItemSlotGrid((IInventory) this.Inventory, new Action<object>(this.SendInvPacket), 1, new int[0], this.inputSlotBounds, "inputSlot")
+      /*.AddSmallButton(Lang.Get("barrel-seal"), new ActionConsumable(this.onSealClick), ElementBounds.Fixed(0.0, 100.0, 80.0, 25.0))*/
+      .AddInset(bounds2.ForkBoundingParent(2.0, 2.0, 2.0, 2.0), 2)
+      .AddDynamicCustomDraw(bounds2, new DrawDelegateWithBounds(this.fullnessMeterDraw), "liquidBar")
+      .AddDynamicText(this.getContentsText(), CairoFont.WhiteDetailText(), bounds1, "contentText")
+      .EndChildElements()
+      .Compose();
   }
 
   private string getContentsText()
   {
     string contentsText = Lang.Get("Contents:");
-    if (this.Inventory[0].Empty && this.Inventory[1].Empty)
+    if (this.Inventory[0].Empty)
     {
       contentsText = $"{contentsText}\n{Lang.Get("nobarrelcontents")}";
     }
     else
     {
-      if (!this.Inventory[1].Empty)
+      if (!this.Inventory[0].Empty)
       {
-        ItemStack itemstack = this.Inventory[1].Itemstack;
+        ItemStack itemstack = this.Inventory[0].Itemstack;
         WaterTightContainableProps containableProps = BlockLiquidContainerBase.GetContainableProps(itemstack);
         if (containableProps != null)
         {
           string str = Lang.Get($"{itemstack.Collectible.Code.Domain}:incontainer-{itemstack.Class.ToString().ToLowerInvariant()}-{itemstack.Collectible.Code.Path}");
-          contentsText = $"{contentsText}\n{Lang.Get(containableProps.MaxStackSize > 0 ? "barrelcontents-items" : "barrelcontents-liquid", (object) (float) ((double) itemstack.StackSize / (double) containableProps.ItemsPerLitre), (object) str)}";
+          contentsText = $"{contentsText}\n{Lang.Get("barrelcontents-liquid", (object) (float) ((double) itemstack.StackSize / (double) containableProps.ItemsPerLitre), (object) str)}";
         }
         else
           contentsText = $"{contentsText}\n{Lang.Get("barrelcontents-items", (object) itemstack.StackSize, (object) itemstack.GetName())}";
       }
-      if (!this.Inventory[0].Empty)
-      {
-        ItemStack itemstack = this.Inventory[0].Itemstack;
-        contentsText = $"{contentsText}\n{Lang.Get("barrelcontents-items", (object) itemstack.StackSize, (object) itemstack.GetName())}";
-      }
-      BEQuartzBowl blockEntity = this.capi.World.BlockAccessor.GetBlockEntity(this.BlockEntityPosition) as BEQuartzBowl;
+      /*BEQuartzBowl blockEntity = this.capi.World.BlockAccessor.GetBlockEntity(this.BlockEntityPosition) as BEQuartzBowl;
       if (blockEntity.CurrentRecipe != null)
       {
         ItemStack resolvedItemStack = blockEntity.CurrentRecipe.RecipeOutput.ResolvedItemStack;
@@ -93,7 +98,7 @@ public class GuiDialogQuartzBowl : GuiDialogBlockEntity
         }
         else
           contentsText = $"{contentsText}\n\n{Lang.Get("Will turn into {0}x {1} after {2} of sealing.", (object) blockEntity.CurrentOutSize, (object) resolvedItemStack.GetName(), (object) str2)}";
-      }
+      }*/
     }
     return contentsText;
   }
@@ -106,7 +111,7 @@ public class GuiDialogQuartzBowl : GuiDialogBlockEntity
 
   private void fullnessMeterDraw(Context ctx, ImageSurface surface, ElementBounds currentBounds)
   {
-    ItemSlot itemSlot = this.Inventory[1];
+    ItemSlot itemSlot = this.Inventory[0];
     if (itemSlot.Empty)
       return;
     BEQuartzBowl blockEntity = this.capi.World.BlockAccessor.GetBlockEntity(this.BlockEntityPosition) as BEQuartzBowl;
