@@ -6,21 +6,29 @@
     {name: "Lockable"},
     {name: "UnstableFalling"}
   ],
-  shape: { base: "game:block/basic/cube" },
-  "drawtype": "Cube",
+  shape: { base: "moonwater:shapes/block/moonbowl" },
+  "drawtype": "json",
   creativeinventory: { "general": ["*"], "decorative": ["*"], "moonwater": ["*"] },
   blockmaterial: "Stone",
   replaceable: 900,
   resistance: 1.5,
   maxStackSize: 1,
   lightAbsorption: 1,
-  textures: {
-    all: { base: "game:block/stone/quartz/full/plain1" },
+  "textures": {
+    "quartz": { "base":  "game:block/stone/quartz/full/plain1"},
+    "bonesrotten": { "base": "game:block/creature/bonesrotten"}
   },
   attributes: {
     reinforcable: true,
     partialAttachable: true,
-    capacityLitres: 50,
+    liquidContainerProps: {
+      capacityLitres: 1,
+      transferSizeLitres: 0.1,
+      emptyShapeLoc: "moonwater:shapes/block/moonbowl",
+      opaqueContentShapeLoc: "game:shapes/block/wood/bucket/contents",
+      liquidContentShapeLoc: "game:shapes/block/wood/bucket/liquidcontents",
+      liquidMaxYTranslate: 0.4375
+    },
     openSound: { path: "game:block/vesselopen", pitch: { avg: 1.0, var: 0.25 } },
     closeSound: { path: "game:block/vesselclose", pitch: { avg: 1.0, var: 0.25 } }
   },
@@ -37,12 +45,12 @@
     all: false
   },
   collisionbox: {
-    x1: 0, y1: 0, z1: 0,
-    x2: 1, y2: 1, z2: 1
+    x1: 0.25, y1: 0, z1: 0.25,
+    x2: 0.75, y2: 0.5, z2: 0.75
   },
   selectionbox: {
-    x1: 0, y1: 0, z1: 0,
-    x2: 1, y2: 1, z2: 1
+    x1: 0.25, y1: 0, z1: 0.25,
+    x2: 0.75, y2: 0.5, z2: 0.75
   },
   combustibleProps: {
     burnTemperature: 600,

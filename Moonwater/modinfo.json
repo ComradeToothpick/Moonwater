@@ -6,8 +6,8 @@
     "authors": [
         "Comrade_Toothpik"
     ],
-    "description": "To be added",
-    "version": "0.1.0",
+    "description": "Adds Moonwater, a mysterious substance that can only be made under very specific conditions, and has alchemical applications.",
+    "version": "0.2.0",
     "dependencies": {
         "game": "1.22.0"
     }
