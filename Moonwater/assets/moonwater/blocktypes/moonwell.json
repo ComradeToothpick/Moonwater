@@ -3,17 +3,25 @@
   "class": "BlockMoonwell",
   "entityClass": "BEMoonwell",
   "behaviors": [
-    
-  ],
-  attributes: {
-    liquidContainerProps: { capacityLitres: 10 },
-    multiblockStructure: {
-      blockNumbers: { "game:block/stone/quartz/quartz-*": 1 },
-      offsets: [
-        { x: -1, y: 0, z: -1, w: 1 }, { x: 0, y: 0, z: -1, w: 2 }, { x: 1, y: 0, z: -1, w: 1 },
-        { x: -1, y: 0, z:  0, w: 4 },                              { x: 1, y: 0, z:  0, w: 5 },
-        { x: -1, y: 0, z:  1, w: 1 }, { x: 0, y: 0, z:  1, w: 3 }, { x: 1, y: 0, z:  1, w: 1 }
-      ]
+    { name: "Multiblock", properties: { type: "monolithic", sizex: 3, sizey: 1, sizez: 3, cposition: { x: 0, y: 0, z: 0 } } },
+    {
+      "name": "Lockable"
     }
+  ],
+  "shapeByType": {
+    "moonwell-filled": { base: "moonwater:shapes/block/moonwell-liquid" },
+    "moonwell*": { base: "moonwater:shapes/block/moonwell" }
   },
+  "attributes": {
+    "handbook": {
+      "groupBy": [ "moonwell"],
+      "extraSections": [
+        {
+          "title": "moonwater:block-handbooktitle-moonwell",
+          "text": "moonwater:block-handbooktext-moonwell"
+        }
+      ]
+    },
+    "liquidContainerProps": { capacityLitres: 10 },
+  }
 }

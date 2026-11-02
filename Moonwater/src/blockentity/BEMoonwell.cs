@@ -13,7 +13,7 @@ public class BEMoonwell : BlockEntityLiquidContainer, ICoolingMedium
     {
         base.Initialize(api);
         structure = Block.Attributes["multiblockStructure"].AsObject<MultiblockStructure>();
-        structure.InitForUse(0);   // 3x3 is symmetric, so no rotation needed
+        structure.InitForUse(0);
     }
 
     public override string InventoryClassName { get; }

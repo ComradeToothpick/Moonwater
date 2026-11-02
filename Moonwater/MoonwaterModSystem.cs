@@ -24,6 +24,8 @@ public class MoonwaterModSystem : ModSystem
         api.RegisterBlockClass("BlockQuartzBowl", typeof(BlockQuartzBowl));
         api.RegisterBlockEntityClass("BEQuartzBowl", typeof(BEQuartzBowl));
         this.QuartzBowlRecipes = api.RegisterRecipeRegistry<RecipeRegistryGeneric<QuartzBowlRecipe>>("quartzbowlrecipes").Recipes;
+        api.RegisterBlockEntityClass("BEMoonwell", typeof(BEMoonwell));
+        api.RegisterBlockClass("BlockMoonwell", typeof(BlockMoonwell));
     }
     
     public override void StartPre(ICoreAPI api)
