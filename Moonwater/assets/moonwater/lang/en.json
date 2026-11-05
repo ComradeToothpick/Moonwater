@@ -2,6 +2,8 @@
     "block-handbooktitle-moonwell": "Moonwell",
     "block-handbooktext-moonwell": "A Moonwell is a large structure that can be used to create Moonwater.",
     "block-moonwell": "Moonwell",
+    "block-moonwell-empty": "Moonwell",
+    "block-moonwell-filled": "Moonwell",
     "block-quartzbowl": "Quartz Bowl",
     "item-moonwaterportion": "Moonwater",
     "incontainer-item-moonwaterportion": "Moonwater"

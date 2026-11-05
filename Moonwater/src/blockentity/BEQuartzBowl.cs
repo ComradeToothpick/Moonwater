@@ -28,7 +28,7 @@ public class BEQuartzBowl : BlockEntityLiquidContainer
     private bool MoonLoS = false;
     //private MoonwaterModSystem modSystem;
 
-    public int CapacityLitres { get; set; } = 1;
+    public virtual int CapacityLitres { get; set; } = 1;
 
     public override string InventoryClassName => "quartzbowl";
 
@@ -239,7 +239,7 @@ public class BEQuartzBowl : BlockEntityLiquidContainer
         Api.World.BlockAccessor.SearchBlocks(new BlockPos(Pos.X - searchRadius, Pos.Y - searchRadius, Pos.Z - searchRadius), new BlockPos(Pos.X + searchRadius, Pos.Y + searchRadius, Pos.Z + searchRadius),
             (blockPos, block) =>
             {
-                if (block is BlockQuartzBowl)
+                if (block is BlockQuartzBowl || block is BlockMoonwell)
                 {
                     count++;
                     if (count > 1)
@@ -478,21 +478,4 @@ public class BEQuartzBowl : BlockEntityLiquidContainer
         base.OnBlockUnloaded();
         this.invDialog?.Dispose();
     }
-
-    /*public void CoolNow(ItemSlot slot, Vec3d pos, float dt, bool playSizzle = true)
-    {
-        ItemSlot itemSlot = this.Inventory[1];
-        if (itemSlot.Empty)
-            return;
-        itemSlot.Itemstack.Collectible.GetCollectibleInterface<ICoolingMedium>()?.CoolNow(slot, pos, dt, playSizzle);
-    }
-
-    public bool CanCool(ItemSlot slot, Vec3d pos)
-    {
-        ItemSlot itemSlot = this.Inventory[1];
-        if (itemSlot.Empty)
-            return false;
-        ICoolingMedium collectibleInterface = itemSlot.Itemstack.Collectible.GetCollectibleInterface<ICoolingMedium>();
-        return collectibleInterface != null && collectibleInterface.CanCool(slot, pos);
-    }*/
 }
