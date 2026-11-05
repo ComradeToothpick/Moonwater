@@ -63,8 +63,4 @@
         </Content>
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="assets\moonwater\textures\block\liquid\" />
-    </ItemGroup>
-
 </Project>

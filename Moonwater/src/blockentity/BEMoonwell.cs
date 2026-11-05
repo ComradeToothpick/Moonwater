@@ -4,9 +4,9 @@ using Vintagestory.GameContent;
 
 namespace Moonwater.blockentity;
 
-public class BEMoonwell : BlockEntityLiquidContainer, ICoolingMedium
+public class BEMoonwell : BlockEntity//BlockEntityLiquidContainer, ICoolingMedium
 {
-    private MultiblockStructure structure;
+    /*private MultiblockStructure structure;
     public bool StructureComplete { get; private set; }
 
     public override void Initialize(ICoreAPI api)
@@ -32,5 +32,5 @@ public class BEMoonwell : BlockEntityLiquidContainer, ICoolingMedium
     public void CoolNow(ItemSlot slot, Vec3d pos, float dt, bool playSizzle = true)
     {
         throw new System.NotImplementedException();
-    }
+    }*/
 }
